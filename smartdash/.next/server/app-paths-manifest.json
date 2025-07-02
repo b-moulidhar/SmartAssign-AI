@@ -1,10 +1,7 @@
 {
-  "/(auth)/forgotPassword/page": "app/(auth)/forgotPassword/page.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(contents)/chatbot/page": "app/(contents)/chatbot/page.js",
   "/(contents)/dashboard/page": "app/(contents)/dashboard/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/login/page": "app/login/page.js",
   "/page": "app/page.js"
 }
