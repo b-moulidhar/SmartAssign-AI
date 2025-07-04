@@ -15,7 +15,7 @@
 
 ```bash
 git clone https://github.com/your-username/SmartAssign-AI.git
-cd your-repo-name
+cd SmartAssing-AI
 ```
 ### 2. Create Virtual Environment
 
