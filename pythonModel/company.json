@@ -1,0 +1,62 @@
+[
+  {
+    "name": "John Doe",
+    "role": "Backend Developer",
+    "skills": ["Node.js", "MongoDB"],
+    "projects": ["SmartAssign"]
+  },
+  {
+    "name": "Anita Roy",
+    "role": "Frontend Developer",
+    "skills": ["React", "Tailwind"],
+    "projects": ["Internal Dashboard"]
+  },
+  {
+    "name": "Rahul Singh",
+    "role": "Full Stack Developer",
+    "skills": ["Node.js", "React", "PostgreSQL"],
+    "projects": ["TalentMatch", "SmartAssign"]
+  },
+  {
+    "name": "Priya Verma",
+    "role": "Data Scientist",
+    "skills": ["Python", "Pandas", "Scikit-learn", "LLMs"],
+    "projects": ["Recommendation Engine"]
+  },
+  {
+    "name": "Ravi Kumar",
+    "role": "DevOps Engineer",
+    "skills": ["Docker", "Kubernetes", "AWS"],
+    "projects": ["Internal Dashboard", "SmartAssign"]
+  },
+  {
+    "name": "Sneha Iyer",
+    "role": "UI/UX Designer",
+    "skills": ["Figma", "Design Systems", "Prototyping"],
+    "projects": ["SmartAssign", "User Portal"]
+  },
+  {
+    "name": "Amit Patel",
+    "role": "ML Engineer",
+    "skills": ["TensorFlow", "LangChain", "NLP"],
+    "projects": ["Chatbot", "SmartAssign AI"]
+  },
+  {
+    "name": "Fatima Noor",
+    "role": "QA Engineer",
+    "skills": ["Selenium", "Cypress", "Postman"],
+    "projects": ["User Portal", "SmartAssign"]
+  },
+  {
+    "name": "Vinay Mehra",
+    "role": "Frontend Developer",
+    "skills": ["Vue.js", "React", "Bootstrap"],
+    "projects": ["Marketing Portal"]
+  },
+  {
+    "name": "Nisha Reddy",
+    "role": "Project Manager",
+    "skills": ["Agile", "Scrum", "Team Management"],
+    "projects": ["SmartAssign", "Internal Dashboard"]
+  }
+]
