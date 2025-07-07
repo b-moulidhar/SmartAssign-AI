@@ -36,3 +36,6 @@ def get_vectorstore():
     vectorstore.persist()
     print("✅ Vector store created and persisted")
     return vectorstore
+
+if __name__ == "__main__":
+    get_vectorstore()
