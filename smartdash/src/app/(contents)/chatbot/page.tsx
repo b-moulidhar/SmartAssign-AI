@@ -1,10 +1,14 @@
 import ChatWindow from "@/components/chat/chatWindow";
+import FacetSidebar from "@/components/chat/facetSideBar";
 
 export default function ChatbotPage() {
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <>
       <h1 className="text-2xl font-semibold mb-4 text-center">Ask SmartAssign AI</h1>
-      <ChatWindow />
-    </div>
+        <div className="min-h-screen bg-gray-100 p-4 gap-8 flex flex-row">
+          <FacetSidebar/>
+          <ChatWindow />
+        </div>
+    </>
   );
 }
