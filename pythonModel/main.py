@@ -5,7 +5,12 @@ from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from vectorstore import get_vectorstore
+from db import chat_collection  # ✅ Import Mongo collection
+from datetime import datetime
 import json
+from starlette.background import BackgroundTask
+from langchain_core.documents import Document
+import asyncio
 
 app = FastAPI()
 
@@ -18,8 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ Include session_id in request body
 class Query(BaseModel):
     prompt: str
+    session_id: str
 
 # LLM + Retriever setup
 llm = OllamaLLM(model="gemma3", streaming=True)
@@ -45,17 +52,29 @@ prompt_template = PromptTemplate(
 
 @app.post("/chat")
 async def chat(query: Query):
-    # Step 1: Retrieve relevant documents
-    docs = retriever.get_relevant_documents(query.prompt)
+    docs: list[Document] = await asyncio.to_thread(retriever.get_relevant_documents, query.prompt)
+    # docs = retriever.get_relevant_documents(query.prompt)
     context = "\n\n".join([doc.page_content for doc in docs])
-
-    # Step 2: Construct prompt manually
     full_prompt = prompt_template.format(context=context, question=query.prompt)
 
-    # Step 3: Stream token-by-token from LLM
+    full_response = ""  # ✅ Collect the full response
+
     def generator():
-        print("🔍 Retrieved Context:\n", context)
+        nonlocal full_response
+        # print("🔍 Retrieved Context:\n", context)
         for chunk in llm.stream(full_prompt):
+            full_response += chunk
             yield json.dumps({"response": chunk}) + "\n"
 
-    return StreamingResponse(generator(), media_type="text/plain")
+    async def save_history():
+        try:
+            await chat_collection.insert_one({
+                "session_id": query.session_id,
+                "user": query.prompt,
+                "bot": full_response,
+                "timestamp": datetime.utcnow()
+            })
+        except Exception as e:
+            print(f"❌ Error saving chat history: {e}")
+
+    return StreamingResponse(generator(), media_type="text/plain", background=BackgroundTask(save_history))

@@ -2,11 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import ChatMessage from "./chatMessage";
-
-interface Message {
-  type: "user" | "bot";
-  text: string;
-}
+import { Message } from "../types";
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -29,7 +25,10 @@ export default function ChatWindow() {
       const res = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input }),
+        body: JSON.stringify({
+          prompt: input,
+          session_id: "abcd" // You must provide this
+        }),
         signal: controller.signal,
         });
 
@@ -92,7 +91,7 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="flex flex-col max-h-dvh min-h-100 max-w-3xl mx-auto bg-white shadow-lg rounded-lg">
+    <div className="flex flex-col max-h-dvh min-h-100 min-w-3xl max-w-3xl right-48 bg-white shadow-lg rounded-lg">
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((msg, index) => (
           <ChatMessage
