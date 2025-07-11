@@ -11,6 +11,7 @@ import json
 from starlette.background import BackgroundTask
 from langchain_core.documents import Document
 import asyncio
+from bson import ObjectId
 
 app = FastAPI()
 
@@ -78,3 +79,44 @@ async def chat(query: Query):
             print(f"❌ Error saving chat history: {e}")
 
     return StreamingResponse(generator(), media_type="text/plain", background=BackgroundTask(save_history))
+
+@app.get("/chat/history/all")
+
+async def get_all_chat_history():
+    pipeline = [
+        {
+            "$sort": {"timestamp": 1}  # Sort messages by timestamp first
+        },
+        {
+            "$group": {
+                "_id": "$session_id",  # Group by session ID
+                "chats": {
+                    "$push": {
+                        "_id": "$_id",
+                        "user": "$user",      
+                        "bot": "$bot",       
+                        "timestamp": "$timestamp"
+                    }
+                }
+            }
+        },
+        {
+            "$sort": {"_id": 1}  # Optional: sort sessions alphabetically by ID
+        }
+    ]
+
+    cursor = chat_collection.aggregate(pipeline)
+    grouped_data = []
+    async for doc in cursor:
+        # Convert ObjectIds to strings
+        for chat in doc["chats"]:
+            if isinstance(chat["_id"], ObjectId):
+                chat["_id"] = str(chat["_id"])
+        grouped_data.append({
+            "session_id": doc["_id"],
+            "chats": doc["chats"]
+        })
+
+    return grouped_data
+
+

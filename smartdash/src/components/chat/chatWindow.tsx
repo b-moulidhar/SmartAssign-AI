@@ -27,7 +27,7 @@ export default function ChatWindow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: input,
-          session_id: "abcd" // You must provide this
+          session_id: "hello123" // You must provide this
         }),
         signal: controller.signal,
         });
