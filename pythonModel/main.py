@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from vectorstore import get_vectorstore
-from db import chat_collection  # ✅ Import Mongo collection
+from db import chat_collection
 from datetime import datetime
 import json
 from starlette.background import BackgroundTask
@@ -18,51 +18,56 @@ app = FastAPI()
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # frontend URL
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Include session_id in request body
+# Define model for request
 class Query(BaseModel):
     prompt: str
     session_id: str
 
-# LLM + Retriever setup
+# Initialize LLM (streaming=True for tokens)
 llm = OllamaLLM(model="gemma3", streaming=True)
-retriever = get_vectorstore().as_retriever(search_kwargs={"k": 10})
 
-# Prompt template
-template = """
-You are a helpful assistant. Use the context below to answer the question accurately.
+# Vectorstore cache (singleton)
+vectorstore_instance = None
+retriever = None
 
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:
-""".strip()
-
-prompt_template = PromptTemplate(
-    input_variables=["context", "question"],
-    template=template
-)
+@app.on_event("startup")
+async def load_vectorstore_once():
+    global vectorstore_instance, retriever
+    vectorstore_instance = await get_vectorstore()
+    retriever = vectorstore_instance.as_retriever(search_kwargs={"k": 10})
+    print("✅ Vectorstore and retriever loaded")
 
 @app.post("/chat")
 async def chat(query: Query):
     docs: list[Document] = await asyncio.to_thread(retriever.get_relevant_documents, query.prompt)
-    # docs = retriever.get_relevant_documents(query.prompt)
     context = "\n\n".join([doc.page_content for doc in docs])
-    full_prompt = prompt_template.format(context=context, question=query.prompt)
 
-    full_response = ""  # ✅ Collect the full response
+    template = """
+    You are a helpful assistant. Use the context below to answer the question accurately.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Answer:
+    """.strip()
+
+    full_prompt = PromptTemplate(input_variables=["context", "question"], template=template).format(
+        context=context, question=query.prompt
+    )
+
+    full_response = ""
 
     def generator():
         nonlocal full_response
-        # print("🔍 Retrieved Context:\n", context)
         for chunk in llm.stream(full_prompt):
             full_response += chunk
             yield json.dumps({"response": chunk}) + "\n"
@@ -81,34 +86,28 @@ async def chat(query: Query):
     return StreamingResponse(generator(), media_type="text/plain", background=BackgroundTask(save_history))
 
 @app.get("/chat/history/all")
-
 async def get_all_chat_history():
     pipeline = [
-        {
-            "$sort": {"timestamp": 1}  # Sort messages by timestamp first
-        },
+        {"$sort": {"timestamp": 1}},
         {
             "$group": {
-                "_id": "$session_id",  # Group by session ID
+                "_id": "$session_id",
                 "chats": {
                     "$push": {
                         "_id": "$_id",
-                        "user": "$user",      
-                        "bot": "$bot",       
+                        "user": "$user",
+                        "bot": "$bot",
                         "timestamp": "$timestamp"
                     }
                 }
             }
         },
-        {
-            "$sort": {"_id": 1}  # Optional: sort sessions alphabetically by ID
-        }
+        {"$sort": {"_id": 1}}
     ]
 
     cursor = chat_collection.aggregate(pipeline)
     grouped_data = []
     async for doc in cursor:
-        # Convert ObjectIds to strings
         for chat in doc["chats"]:
             if isinstance(chat["_id"], ObjectId):
                 chat["_id"] = str(chat["_id"])
@@ -118,5 +117,3 @@ async def get_all_chat_history():
         })
 
     return grouped_data
-
-

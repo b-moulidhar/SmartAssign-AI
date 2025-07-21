@@ -1,5 +1,6 @@
 {
   "/(contents)/chatbot/page": "app/(contents)/chatbot/page.js",
+  "/(contents)/dashboard/page": "app/(contents)/dashboard/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }

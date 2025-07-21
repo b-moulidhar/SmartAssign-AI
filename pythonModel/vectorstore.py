@@ -4,21 +4,37 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from db import company_collection # Import the db module to access MongoDB collections
+import asyncio;
 
 CHROMA_DIR = "chroma-store"
 
-def get_vectorstore():
+async def get_vectorstore():
     # Reuse if already persisted
     if os.path.exists(CHROMA_DIR):
         return Chroma(persist_directory=CHROMA_DIR, embedding_function=OllamaEmbeddings(model="nomic-embed-text"))
 
     # Load your JSON data
-    with open("./company.json", "r") as f:
-        raw_data = json.load(f)
+    raw_data = await company_collection.find().to_list(length=None)
+    print(f"Loaded {len(raw_data)} employee records from MongoDB")
 
     documents = []
     for item in raw_data:
-        content = f"**{item['name']}**\n{item['role']}\nSkills: {', '.join(item['skills'])}\nProjects: {', '.join(item['projects'])}"
+        name = item.get("name", "Unknown")
+        status = item.get("current_status", "Unknown")
+        skills = item.get("skills", "")
+        domain = item.get("domain_expertise", "")
+        projects = item.get("past_projects", "")
+        certifications = item.get("certifications", "")
+
+        content = (
+            f"Name: {name}\n"
+            f"Status: {status}\n"
+            f"Skills: {skills}\n"
+            f"Domain Expertise: {domain}\n"
+            f"Certifications: {certifications}\n"
+            f"Projects: {projects}"
+        )
         documents.append(Document(page_content=content))
 
     # Chunk the data
@@ -38,4 +54,4 @@ def get_vectorstore():
     return vectorstore
 
 if __name__ == "__main__":
-    get_vectorstore()
+    asyncio.run(get_vectorstore())
