@@ -20,6 +20,7 @@ chat_collection = db.chat_history
 client_data = AsyncIOMotorClient(MONGODB_URI_DATA)
 db_data = client_data[DB_DATA_NAME] 
 company_collection = db_data.employees
+company_creds = db_data.login
 
 
 # async def set_db():

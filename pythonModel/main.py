@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from vectorstore import get_vectorstore
-from db import chat_collection
+from db import chat_collection, company_creds
 from datetime import datetime
 import json
 from starlette.background import BackgroundTask
@@ -28,6 +28,9 @@ app.add_middleware(
 class Query(BaseModel):
     prompt: str
     session_id: str
+class LoginQuery(BaseModel):
+    user: str
+    password: str
 
 # Initialize LLM (streaming=True for tokens)
 llm = OllamaLLM(model="gemma3", streaming=True)
@@ -42,6 +45,17 @@ async def load_vectorstore_once():
     vectorstore_instance = await get_vectorstore()
     retriever = vectorstore_instance.as_retriever(search_kwargs={"k": 10})
     print("✅ Vectorstore and retriever loaded")
+
+
+@app.post("/login")
+async def login(query: LoginQuery):
+    print(f"Received login request for user: {query}")
+    result = await company_creds.find_one({"user": query.user, "password": query.password})
+    print(f"Login result: {result}")
+    if result == None:
+        return {"message": "Invalid credentials"}
+    else:
+        return {"message": "Login successful"}
 
 @app.post("/chat")
 async def chat(query: Query):
