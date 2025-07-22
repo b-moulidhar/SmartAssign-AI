@@ -15,7 +15,7 @@
 
 ```bash
 git clone https://github.com/your-username/SmartAssign-AI.git
-cd SmartAssing-AI
+cd SmartAssign-AI
 ```
 ### 2. Create Virtual Environment
 
@@ -59,3 +59,21 @@ uvicorn main:app --reload
 ```
 API will be available at:
 📍 http://127.0.0.1:8000
+
+## 🛠️ Frontend setup instructions
+
+### 1. redirect to smartdash folder from smartassignAI folder
+```bash
+cd smartdash
+```
+### 2. Install dependencies
+```bash
+npm install
+```
+### 3. ▶️run NextJs Development server
+```bash
+npm run dev
+```
+API will be available at:
+📍 http://localhost:3000
+
