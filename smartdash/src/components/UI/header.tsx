@@ -9,6 +9,8 @@ export default function Header() {
   const router = useRouter();
 const handleLogout = () => {
     document.cookie = "auth=false; path=/; max-age=0";
+    document.cookie = "session_id=null; path=/; max-age=0";
+    document.cookie = "user_id=null; path=/; max-age=0";
     router.replace("/login");
 }
 

@@ -15,7 +15,7 @@ async def get_vectorstore():
         return Chroma(persist_directory=CHROMA_DIR, embedding_function=OllamaEmbeddings(model="nomic-embed-text"))
 
     # Load your JSON data
-    raw_data = await company_collection.find().to_list(length=None)
+    raw_data = await company_collection.find({}, {'_id': 0}).to_list(length=None)
     print(f"Loaded {len(raw_data)} employee records from MongoDB")
 
     documents = []
@@ -36,6 +36,7 @@ async def get_vectorstore():
             f"Projects: {projects}"
         )
         documents.append(Document(page_content=content))
+        # documents.append(Document(page_content= json.dumps(item)))  
 
     # Chunk the data
     splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=50)
@@ -48,7 +49,7 @@ async def get_vectorstore():
         embedding=embeddings,
         persist_directory=CHROMA_DIR
     )
-
+    print(f"Created vector store with {documents}")
     vectorstore.persist()
     print("✅ Vector store created and persisted")
     return vectorstore

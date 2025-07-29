@@ -16,6 +16,7 @@ MONGODB_URI_DATA = f"mongodb+srv://admin:{DATA_PSWD}@smartassign-mongodbclus.nve
 client = AsyncIOMotorClient(MONGODB_URI)
 db = client[DB_NAME]
 chat_collection = db.chat_history
+proje_collection = db.projects
 
 client_data = AsyncIOMotorClient(MONGODB_URI_DATA)
 db_data = client_data[DB_DATA_NAME] 
@@ -24,7 +25,7 @@ company_creds = db_data.login
 
 
 # async def set_db():
-#     result = await company_collection.insert_many(sample_company)
+#     result = await proje_collection.insert_many(projects)
 #     return print(f"Sample company inserted with ID: {result.inserted_ids}")
 
 # asyncio.run(set_db()) # Run the async function to insert sample data

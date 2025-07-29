@@ -1,17 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Path
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from vectorstore import get_vectorstore
-from db import chat_collection, company_creds
+from db import chat_collection, company_creds, proje_collection
 from datetime import datetime
 import json
 from starlette.background import BackgroundTask
 from langchain_core.documents import Document
 import asyncio
 from bson import ObjectId
+import time
+import random
 
 app = FastAPI()
 
@@ -28,6 +30,7 @@ app.add_middleware(
 class Query(BaseModel):
     prompt: str
     session_id: str
+    user_id: str 
 class LoginQuery(BaseModel):
     user: str
     password: str
@@ -55,11 +58,25 @@ async def login(query: LoginQuery):
     if result == None:
         return {"message": "Invalid credentials"}
     else:
-        return {"message": "Login successful"}
+        return {"message": "Login successful",
+                "session_id": str(random.randint(10000000000000, 99999999999999)),  # Generate a random session ID
+                "user": query.user}
+
+@app.get("/projects")
+async def get_projects():
+    try:
+        projects = await proje_collection.find({}, {'_id': 0}).to_list(length=None)
+        print(f"Loaded {len(projects)} projects from MongoDB")
+        return {"projects": projects}
+    except Exception as e:
+        print(f"❌ Error fetching projects: {e}")
+        return {"error": "Failed to fetch projects"}
 
 @app.post("/chat")
 async def chat(query: Query):
+    start = time.time()
     docs: list[Document] = await asyncio.to_thread(retriever.get_relevant_documents, query.prompt)
+    print("⏱️ Retrieval time:", time.time() - start)
     context = "\n\n".join([doc.page_content for doc in docs])
 
     template = """
@@ -82,14 +99,17 @@ async def chat(query: Query):
 
     def generator():
         nonlocal full_response
+        start = time.time()
         for chunk in llm.stream(full_prompt):
             full_response += chunk
             yield json.dumps({"response": chunk}) + "\n"
+        print("⏱️ LLM response time:", time.time() - start)
 
     async def save_history():
         try:
             await chat_collection.insert_one({
                 "session_id": query.session_id,
+                "userid": query.user_id,  # Use session_id as user ID
                 "user": query.prompt,
                 "bot": full_response,
                 "timestamp": datetime.utcnow()
@@ -99,13 +119,14 @@ async def chat(query: Query):
 
     return StreamingResponse(generator(), media_type="text/plain", background=BackgroundTask(save_history))
 
-@app.get("/chat/history/all")
-async def get_all_chat_history():
+@app.get("/chat/history/{userid}")
+async def get_chat_history_by_userid(userid: str = Path(..., description="User ID to retrieve chat history")):
     pipeline = [
+        {"$match": {"userid": userid}},  # Filter only this user
         {"$sort": {"timestamp": 1}},
         {
             "$group": {
-                "_id": "$session_id",
+                "_id": "$session_id",  # Group by session ID within the user
                 "chats": {
                     "$push": {
                         "_id": "$_id",
@@ -121,6 +142,7 @@ async def get_all_chat_history():
 
     cursor = chat_collection.aggregate(pipeline)
     grouped_data = []
+
     async for doc in cursor:
         for chat in doc["chats"]:
             if isinstance(chat["_id"], ObjectId):
@@ -130,4 +152,7 @@ async def get_all_chat_history():
             "chats": doc["chats"]
         })
 
-    return grouped_data
+    return {
+        "userid": userid,
+        "sessions": grouped_data
+    }

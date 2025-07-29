@@ -3,12 +3,16 @@
 import React, { useState, useRef } from "react";
 import ChatMessage from "./chatMessage";
 import { Message } from "../types";
+import Cookie from "js-cookie";
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
+  const sessionId = Cookie.get("session_id") || "";
+  const user_Id = Cookie.get("user_id") || "";
+  
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -27,7 +31,8 @@ export default function ChatWindow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: input,
-          session_id: "hello123" // You must provide this
+          session_id: sessionId,
+          user_id:user_Id
         }),
         signal: controller.signal,
         });
@@ -91,7 +96,7 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="flex flex-col max-h-dvh min-h-100 min-w-3xl max-w-3xl right-48 bg-white shadow-lg rounded-lg">
+    <div className="flex flex-col max-h-dvh min-h-100 min-w-2xs sm:min-w-sm md:min-w-xl lg:min-w-3xl sm:max-w-sm md:max-w-xl lg:max-w-3xl right-48 bg-white shadow-lg rounded-lg">
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((msg, index) => (
           <ChatMessage

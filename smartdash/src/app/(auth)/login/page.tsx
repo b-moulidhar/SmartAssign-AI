@@ -25,6 +25,8 @@ export default function LoginPage() {
           console.log("Login result:", result, res);
       if (res.status==200 && result.message == "Login successful") {
         document.cookie = "auth=true; path=/; max-age=3600";
+        document.cookie = `session_id=${result.session_id}; path=/; max-age=3600`;
+        document.cookie = `user_id=${result.user}; path=/; max-age=3600`;
         router.replace("/dashboard");
       } else {
         alert("Invalid credentials");

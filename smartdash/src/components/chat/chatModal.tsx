@@ -13,7 +13,7 @@ function ChatModal({ chats, onClose, sessionId }: any) {
       <div className="w-full sm:max-w-2xl mx-3 sm:mx-auto transition-all duration-500 ease-out">
 
         <div className="relative flex flex-col bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden">
-          <h3 className="text-center text-lg font-semibold">{sessionId}</h3>
+          <h3 className="text-center text-lg font-semibold">{chats[0].user}</h3>
 
           {/* Close button */}
           <div className="absolute top-2 end-2">
