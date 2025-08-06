@@ -58,7 +58,7 @@ const handleLogout = () => {
 
 <div>
   <Link
-    href="dashboard"
+    href="/dashboard"
     className="relative inline-block text-black focus:outline-hidden before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-yellow-400"
     aria-current="page">
     Projects
@@ -67,7 +67,7 @@ const handleLogout = () => {
 
 <div>
   <Link
-    href="chatbot"
+    href="/chatbot"
     className="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600">
     Chat with AI
   </Link>
@@ -75,7 +75,7 @@ const handleLogout = () => {
 
 <div>
   <Link
-    href="employees"
+    href="/employees"
     className="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600">
     Employees
   </Link>

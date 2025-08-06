@@ -1,5 +1,5 @@
 from fastapi import FastAPI,Path
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
@@ -7,7 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from vectorstore import get_vectorstore
 from db import chat_collection, company_creds, proje_collection
 from datetime import datetime
-import json
+import json, re
 from starlette.background import BackgroundTask
 from langchain_core.documents import Document
 import asyncio
@@ -35,6 +35,13 @@ class LoginQuery(BaseModel):
     user: str
     password: str
 
+class MatchedEmp(BaseModel):
+    project_id: str
+    project_name: str
+    project_role: str
+    project_skills: str
+    project_certifications: str
+    project_duration: int
 # Initialize LLM (streaming=True for tokens)
 llm = OllamaLLM(model="gemma3", streaming=True)
 
@@ -71,6 +78,21 @@ async def get_projects():
     except Exception as e:
         print(f"❌ Error fetching projects: {e}")
         return {"error": "Failed to fetch projects"}
+    
+@app.get("/projects/{project_id}")
+async def get_project_by_id(project_id: str):
+    try:
+        project = await proje_collection.find_one({"project_id": project_id}, {'_id': 0})
+        if project:
+            print(f"Project found: {project}")
+            return {"project": project}
+        else:
+            print(f"❌ Project with ID {project_id} not found")
+            return {"error": "Project not found"}  
+    except Exception as e:
+        print(f"❌ Error fetching project: {e}")
+        return {"error": "Failed to fetch project"}
+    
 
 @app.post("/chat")
 async def chat(query: Query):
@@ -156,3 +178,80 @@ async def get_chat_history_by_userid(userid: str = Path(..., description="User I
         "userid": userid,
         "sessions": grouped_data
     }
+
+@app.post("/matchedEmp/{project_id}")
+async def get_matched_employees(project_id: str, query: MatchedEmp):
+    start_retrieval = time.time()
+    query_text = f"{query.project_role} with skills {query.project_skills} and certifications {query.project_certifications}"
+    docs = await asyncio.to_thread(retriever.get_relevant_documents, query_text)
+    print("⏱️ Retrieval time:", time.time() - start_retrieval)
+
+    employee_context = "\n\n".join([doc.page_content for doc in docs])
+    context = f"""
+    Project ID: {query.project_id}
+    Name: {query.project_name}
+    Duration: {query.project_duration} months
+    Roles: {query.project_role}
+    Skills: {query.project_skills}
+    Certifications: {query.project_certifications}
+    """
+
+    prompt_template = PromptTemplate.from_template("""
+    You are a smart talent-matching assistant. Based on the project description and context of employee profiles, recommend the most compatible employees for all of the given roles.
+
+    Respond only with a JSON object. Do not include ```json or any Markdown formatting.
+
+    Format:
+    {{
+      "matched_employees": [
+        {{
+          "role": "...",
+          "recommended_employees": [
+            {{
+              "employee_id": "...",
+              "name": "...",
+              "matching_skills": ["..."],
+              "match_score": 0.0,
+              "match_reason": "..."
+            }}
+          ]
+        }}
+      ]
+    }}
+
+    Project ID: {project_id}
+
+    Context (Project Description):
+    {project_context}
+
+    Employee Profiles:
+    {employee_context}
+    """)
+
+    full_prompt = prompt_template.format(
+        project_id=project_id,
+        project_context=context,
+        employee_context=employee_context
+    )
+
+    start_llm = time.time()
+    response = await asyncio.to_thread(llm.invoke, full_prompt)  # or use await llm.ainvoke()
+    print("⏱️ LLM response time:", time.time() - start_llm)
+
+    def extract_json(text: str):
+        try:
+            cleaned = re.sub(r"```(?:json)?", "", text).strip()
+            start = cleaned.index("{")
+            end = cleaned.rindex("}") + 1
+            return json.loads(cleaned[start:end])
+        except Exception as e:
+            return {
+                "error": "Invalid or no JSON found",
+                "details": str(e),
+                "raw": text
+            }
+
+    result = extract_json(response)
+    print("Matched Employees:", result)
+    return JSONResponse(content=result, status_code=200 if "error" not in result else 500)
+    

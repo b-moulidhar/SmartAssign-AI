@@ -1,17 +1,21 @@
-import React from 'react'
+import Link from 'next/link'
 
-function ProjectsBox(props: any) {
+export default function ProjectsBox(props:any) {
+  const { project_name, team_roles, project_id } = props.Project
+
   return (
-    <a className="group flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl hover:shadow-md focus:outline-hidden focus:shadow-md transition" href="#">
+    <Link
+      href={`/dashboard/projects/${project_id}`}
+      className="group flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl hover:shadow-md focus:outline-hidden focus:shadow-md transition"
+    >
       <div className="p-4 md:p-5">
         <div className="flex justify-between items-center gap-x-3">
           <div className="grow">
             <h3 className="group-hover:text-blue-600 font-semibold text-gray-800">
-                {console.log(props)}
-                {props.Project.project_name || "Project Name"}
+              {project_name || "Project Name"}
             </h3>
             <p className="text-sm text-gray-500">
-                {(props.Project.team_roles).length+" job positions" || "No Job Positions"}
+              {(team_roles?.length || 0) + " job positions"}
             </p>
           </div>
           <div>
@@ -19,8 +23,6 @@ function ProjectsBox(props: any) {
           </div>
         </div>
       </div>
-    </a>
+    </Link>
   )
 }
-
-export default ProjectsBox

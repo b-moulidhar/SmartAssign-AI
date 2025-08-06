@@ -141,6 +141,7 @@
     --color-gray-400: oklch(70.7% .022 261.325);
     --color-gray-500: oklch(55.1% .027 264.364);
     --color-gray-600: oklch(44.6% .03 256.802);
+    --color-gray-700: oklch(37.3% .034 259.733);
     --color-gray-800: oklch(27.8% .033 256.848);
     --color-black: #000;
     --color-white: #fff;
@@ -448,8 +449,16 @@
     margin-top: calc(var(--spacing) * 7);
   }
 
+  .mr-1 {
+    margin-right: calc(var(--spacing) * 1);
+  }
+
   .mr-auto {
     margin-right: auto;
+  }
+
+  .mb-1 {
+    margin-bottom: calc(var(--spacing) * 1);
   }
 
   .mb-2 {
@@ -458,6 +467,14 @@
 
   .mb-4 {
     margin-bottom: calc(var(--spacing) * 4);
+  }
+
+  .mb-6 {
+    margin-bottom: calc(var(--spacing) * 6);
+  }
+
+  .mb-10 {
+    margin-bottom: calc(var(--spacing) * 10);
   }
 
   .ml-auto {
@@ -508,20 +525,8 @@
     height: calc(var(--spacing) * 9.5);
   }
 
-  .h-8 {
-    height: calc(var(--spacing) * 8);
-  }
-
-  .h-32 {
-    height: calc(var(--spacing) * 32);
-  }
-
   .h-fit {
     height: fit-content;
-  }
-
-  .max-h-3 {
-    max-height: calc(var(--spacing) * 3);
   }
 
   .max-h-7 {
@@ -530,14 +535,6 @@
 
   .max-h-8 {
     max-height: calc(var(--spacing) * 8);
-  }
-
-  .max-h-16 {
-    max-height: calc(var(--spacing) * 16);
-  }
-
-  .max-h-32 {
-    max-height: calc(var(--spacing) * 32);
   }
 
   .max-h-\[80vh\] {
@@ -556,22 +553,6 @@
     min-height: 100vh;
   }
 
-  .w-1\/4 {
-    width: 25%;
-  }
-
-  .w-2 {
-    width: calc(var(--spacing) * 2);
-  }
-
-  .w-3\/4 {
-    width: 75%;
-  }
-
-  .w-4 {
-    width: calc(var(--spacing) * 4);
-  }
-
   .w-64 {
     width: calc(var(--spacing) * 64);
   }
@@ -584,20 +565,8 @@
     max-width: 25%;
   }
 
-  .max-w-2\.5 {
-    max-width: calc(var(--spacing) * 2.5);
-  }
-
   .max-w-3 {
     max-width: calc(var(--spacing) * 3);
-  }
-
-  .max-w-3xl {
-    max-width: var(--container-3xl);
-  }
-
-  .max-w-4 {
-    max-width: calc(var(--spacing) * 4);
   }
 
   .max-w-7xl {
@@ -618,10 +587,6 @@
 
   .min-w-2xs {
     min-width: var(--container-2xs);
-  }
-
-  .min-w-3xl {
-    min-width: var(--container-3xl);
   }
 
   .flex-1 {
@@ -646,6 +611,10 @@
 
   .cursor-pointer {
     cursor: pointer;
+  }
+
+  .list-disc {
+    list-style-type: disc;
   }
 
   .flex-col {
@@ -678,6 +647,10 @@
 
   .gap-3 {
     gap: calc(var(--spacing) * 3);
+  }
+
+  .gap-6 {
+    gap: calc(var(--spacing) * 6);
   }
 
   .gap-8 {
@@ -802,12 +775,20 @@
     padding: calc(var(--spacing) * 2);
   }
 
+  .p-3 {
+    padding: calc(var(--spacing) * 3);
+  }
+
   .p-4 {
     padding: calc(var(--spacing) * 4);
   }
 
   .p-10 {
     padding: calc(var(--spacing) * 10);
+  }
+
+  .px-2 {
+    padding-inline: calc(var(--spacing) * 2);
   }
 
   .px-3 {
@@ -840,6 +821,10 @@
 
   .pe-3 {
     padding-inline-end: calc(var(--spacing) * 3);
+  }
+
+  .pl-5 {
+    padding-left: calc(var(--spacing) * 5);
   }
 
   .text-center {
@@ -910,6 +895,10 @@
     color: var(--color-gray-600);
   }
 
+  .text-gray-700 {
+    color: var(--color-gray-700);
+  }
+
   .text-gray-800 {
     color: var(--color-gray-800);
   }
@@ -924,6 +913,10 @@
 
   .text-white {
     color: var(--color-white);
+  }
+
+  .uppercase {
+    text-transform: uppercase;
   }
 
   .decoration-2 {
@@ -1184,12 +1177,6 @@
   }
 
   @media (width >= 40rem) {
-    .sm\:min-w-xl {
-      min-width: var(--container-xl);
-    }
-  }
-
-  @media (width >= 40rem) {
     .sm\:grid-cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1229,24 +1216,6 @@
   @media (width >= 48rem) {
     .md\:max-w-xl {
       max-width: var(--container-xl);
-    }
-  }
-
-  @media (width >= 48rem) {
-    .md\:min-w-2 {
-      min-width: calc(var(--spacing) * 2);
-    }
-  }
-
-  @media (width >= 48rem) {
-    .md\:min-w-2xl {
-      min-width: var(--container-2xl);
-    }
-  }
-
-  @media (width >= 48rem) {
-    .md\:min-w-3xl {
-      min-width: var(--container-3xl);
     }
   }
 
@@ -1311,6 +1280,12 @@
   }
 
   @media (width >= 64rem) {
+    .lg\:mb-14 {
+      margin-bottom: calc(var(--spacing) * 14);
+    }
+  }
+
+  @media (width >= 64rem) {
     .lg\:block {
       display: block;
     }
@@ -1349,6 +1324,12 @@
   @media (width >= 64rem) {
     .lg\:basis-auto {
       flex-basis: auto;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .lg\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 
